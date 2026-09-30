@@ -7,6 +7,8 @@ import handlers
 from access_control import init_admin_user_ids
 from storage import init_db
 from utils import init_client
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
 
 # Init args
 parser = argparse.ArgumentParser()
@@ -62,6 +64,15 @@ async def main():
     # Start bot
     print("Starting Gemini_Telegram_Bot.")
     await bot.polling(none_stop=True)
+
+# 專門為 Render 提供 Health Check 嘅 dummy server
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(('0.0.0.0', port), BaseHTTPRequestHandler)
+    server.serve_forever()
+
+threading.Thread(target=run_dummy_server, daemon=True).start()
+
 
 if __name__ == '__main__':
     asyncio.run(main())

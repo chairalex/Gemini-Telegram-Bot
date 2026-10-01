@@ -66,9 +66,20 @@ async def main():
     await bot.polling(none_stop=True)
 
 # 專門為 Render 提供 Health Check 嘅 dummy server
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+    def log_message(self, format, *args):
+        # 隱藏 HTTP 請求 Log，保持 Render console 乾淨
+        return
+
 def run_dummy_server():
     port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), BaseHTTPRequestHandler)
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
 threading.Thread(target=run_dummy_server, daemon=True).start()
